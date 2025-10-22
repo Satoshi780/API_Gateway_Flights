@@ -1,7 +1,7 @@
 const { StatusCodes } = require('http-status-codes');
 const { UserRepository }= require('../repositories');
 const AppError = require('../utils/errors/app-error');
-
+const { Auth }= require('../utils/common');
 const userRepo= new UserRepository();
 
 async function create(data){
@@ -20,6 +20,30 @@ async function create(data){
     }
 }
 
+async function signin(data){
+    try{
+        //logic for signin will be here
+        const user = await userRepo.getUserByEmail(data.email);
+        if (!user) {
+            throw new AppError('No user found for the given email', StatusCodes.UNAUTHORIZED);
+        }
+        const passwordMatch = Auth.checkPassword(data.password,user.password);
+        if (!passwordMatch) {
+            throw new AppError('Incorrect password', StatusCodes.UNAUTHORIZED);
+        }
+        const jwt=Auth.createToken({id:user.id,email:user.email});
+        return jwt;
+    }catch(error){
+        if(error instanceof AppError){
+            throw error;
+        }
+        throw new AppError('Cannot signin user',StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+
+}
+
+
 module.exports={
-    create
+    create,
+    signin,
 };

@@ -6,4 +6,5 @@ module.exports = {
     // provide both UPPERCASE and camelCase exports for compatibility
     ENUMS: enums,
     Enums: enums,
+    Auth : require('./auth'),
 };
