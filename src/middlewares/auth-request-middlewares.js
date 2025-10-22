@@ -1,7 +1,7 @@
 const {StatusCodes}=require('http-status-codes');
 const AppError=require('../utils/errors/app-error');
 const {ErrorResponse}=require('../utils/common');
-
+const { UserService }=require('../services');
 
 function validateAuthRequest(req,res,next){
     if(!req.body.email){
@@ -21,6 +21,29 @@ function validateAuthRequest(req,res,next){
     next();
 }
 
+async function checkAuth(req,res,next){
+    try{
+        // Check for token in headers first, then query params
+        const token = req.headers['x-access-token'] || req.query['x-access-token'];
+        
+        if(!token){
+            throw new AppError(['Missing JWT Token'], StatusCodes.UNAUTHORIZED);
+        }
+        
+        const response=await UserService.isAuthenticated(token);
+        if(response){
+            req.user=response;//setting user id in req object
+            next();
+        }
+    }catch(error){
+        return res.
+        status(StatusCodes.UNAUTHORIZED).json({
+            message: 'Authentication failed',
+            error: error
+        });
+    }
+}
 module.exports={
-    validateAuthRequest
+    validateAuthRequest,
+    checkAuth
 };

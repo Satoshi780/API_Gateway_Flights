@@ -20,7 +20,15 @@ function createToken(input){
     }
 }
 
+function verifyToken(token){
+    try{
+        return jwt.verify(token,ServerConfig.JWT_SECRET);
+    }catch(error){
+        throw new AppError('Token verification failed',StatusCodes.UNAUTHORIZED);
+    }
+}
 module.exports={
     checkPassword,
-    createToken
+    createToken,
+    verifyToken
 };
