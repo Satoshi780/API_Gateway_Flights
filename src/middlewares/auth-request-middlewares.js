@@ -43,7 +43,24 @@ async function checkAuth(req,res,next){
         });
     }
 }
+async function isAdmin(req,res,next){
+    try{
+        const userId=req.user.id;
+        const isAdmin=await UserService.isAdmin(userId);
+        if(!isAdmin){
+            throw new AppError('User is not an admin',StatusCodes.FORBIDDEN);
+        }
+        next();
+    }catch(error){
+        return res.
+        status(StatusCodes.UNAUTHORIZED).json({
+            message: 'Authentication failed',
+            error: error
+        });
+    }
+}
 module.exports={
     validateAuthRequest,
-    checkAuth
+    checkAuth,
+    isAdmin
 };

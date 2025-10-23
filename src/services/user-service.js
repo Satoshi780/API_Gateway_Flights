@@ -70,8 +70,45 @@ async function isAuthenticated(token){
         throw new AppError('Cannot authenticate user',StatusCodes.INTERNAL_SERVER_ERROR);
     }
 }
+
+async function addRoleToUser(data){
+    try{
+        const user= await userRepo.get(data.userId);
+        if(!user){
+            throw new AppError('No user found for the given id',StatusCodes.NOT_FOUND);
+        }
+        const role= await roleRepo.getRoleByName(data.roleName);
+        if(!role){
+            throw new AppError('No role found for the given name',StatusCodes.NOT_FOUND);
+        }
+        await user.addRole(role);
+        return;
+    }catch(error){
+        if(error instanceof AppError){
+            throw error;
+        }
+        throw new AppError('Cannot add role to user',StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+}
+async function isAdmin(userId){
+    try{
+        const user=await userRepo.get(userId);
+        if(!user){
+            throw new AppError('No user found for the given id',StatusCodes.NOT_FOUND);
+        }
+        const adminRole=await roleRepo.getRoleByName(Enums.USER_ROLES_ENUMS.ADMIN);
+        if(!adminRole){
+            throw new AppError('Admin role not found',StatusCodes.INTERNAL_SERVER_ERROR);
+        }
+        return user.hasRole(adminRole); 
+    }catch(error){
+        throw new AppError('Cannot verify admin status',StatusCodes.INTERNAL_SERVER_ERROR);
+    }
+}
 module.exports={
     create,
     signin,
-    isAuthenticated
+    isAuthenticated,
+    addRoleToUser,
+    isAdmin
 };
